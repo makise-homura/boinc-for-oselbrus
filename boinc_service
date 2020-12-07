@@ -1,0 +1,86 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          boinc
+# Required-Start:    $syslog +network
+# Required-Stop:     $syslog +network
+# Default-Start:     3 5
+# Default-Stop:      0 6
+# Short-Description: 
+# Description:       BOINC client (either native or x86_64 one).
+### END INIT INFO
+
+# ---------------------------------------------------------------------------------------------------- #
+#   Configure the following parameters prior to use this file:                                         #
+# ---------------------------------------------------------------------------------------------------- #
+
+ENABLE_CGROUPFS=yes
+ENABLE_CVMFS=yes
+ENABLE_REMOTE_GUI_RPC=yes
+
+EXENAME=boinc  # This script should have a name other than EXENAME to avoid confusing statusproc.
+X86_64_FS_PATH=/opt/mcst/os_elbrus.6.0-rc3.x86_64
+RTC_PATH=/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob
+CLIENT_PATH=/usr/bin/$EXENAME
+DATA_DIR=/var/lib/boinc
+CVMFS_DIR=/cvmfs
+BOINCCMD_PATH=/usr/bin/boinccmd
+CGFSMOUNT_PATH=/root/cgroupfs-mount       # Path inside x86_64 image
+
+# ---------------------------------------------------------------------------------------------------- #
+
+
+if [ "$ENABLE_CVMFS" = "yes" ]
+then
+    [ ! -d "$CVMFS_DIR" ] && mkdir -p $CVMFS_DIR
+    CVMFSPARM="-b $CVMFS_DIR -b /etc/fstab -b /etc/mtab"
+fi
+
+CLIENTCMDPREFIX=
+BOINCCMDPREFIX=
+CGFSMOUNTPREFIX=
+[ ! -x $CLIENT_PATH    -a -x $X86_64_FS_PATH/$CLIENT_PATH ]    && CLIENTCMDPREFIX="$RTC_PATH --path_prefix $X86_64_FS_PATH $CVMFSPARM --"
+[ ! -x $BOINCCMD_PATH  -a -x $X86_64_FS_PATH/$BOINCCMD_PATH ]  &&  BOINCCMDPREFIX="$RTC_PATH --path_prefix $X86_64_FS_PATH $CVMFSPARM --"
+[ ! -x $CGFSMOUNT_PATH -a -x $X86_64_FS_PATH/$CGFSMOUNT_PATH ] && CGFSMOUNTPREFIX="$RTC_PATH --path_prefix $X86_64_FS_PATH $CVMFSPARM --"
+
+ALLOWREMOTE=
+[ "$ENABLE_REMOTE_GUI_RPC" = "yes" ] && ALLOWREMOTE="--allow_remote_gui_rpc"
+
+. /etc/sysconfig/rc
+. ${rc_functions}
+
+case "$1" in
+    status)
+        statusproc $EXENAME
+        test -n "${pidlist}" # statusproc always returns 0, so we should fix it here.
+        ;;
+    start)
+        boot_mesg "Starting BOINC..."
+        if [ "$ENABLE_CGROUPFS" = "yes" -a ! -x $CGFSMOUNT_PATH -a ! -x $X86_64_FS_PATH/$CGFSMOUNT_PATH ]
+        then
+            echo "  (Warning: cgroupfs mount enabled, but no $CGFSMOUNT_PATH found)"
+            ENABLE_CGROUPFS=no
+        fi
+        [ "$ENABLE_CGROUPFS" = "yes" ] && $CGFSMOUNTPREFIX $CGFSMOUNT_PATH
+        $CLIENTCMDPREFIX $CLIENT_PATH $ALLOWREMOTE --daemon --dir $DATA_DIR
+        evaluate_retval
+        ;;
+    stop)
+        boot_mesg "Stopping BOINC..."
+        $BOINCCMDPREFIX /bin/bash -c "cd $DATA_DIR; $BOINCCMD_PATH --quit"
+        evaluate_retval
+        ;;
+    restart|force-reload)
+        $0 stop
+        sleep 1
+        $0 start
+        ;;
+    reload)
+        echo -n "Reloading BOINC CC configuration: "
+        $BOINCCMDPREFIX /bin/bash -c "cd $DATA_DIR; $BOINCCMD_PATH --read_cc_config"
+        evaluate_retval
+        ;;
+    *)
+        echo "Usage: $0 {status|start|stop|restart|force-reload}" >&2
+        exit 1
+        ;;
+esac
