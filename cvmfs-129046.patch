@@ -1,0 +1,17 @@
+--- a/cvmfs/CMakeLists.txt	2018-11-26 18:15:32.000000000 +0300
++++ b/cvmfs/CMakeLists.txt	2021-10-25 22:32:55.943362805 +0300
+@@ -657,14 +657,6 @@
+   # dummy target to cause merged libcvmfs to be produced
+   add_custom_target (libcvmfs ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libcvmfs.a)
+   add_dependencies (libcvmfs cvmfs_only)
+-
+-  add_executable( test_libcvmfs ${TEST_LIBCVMFS_SOURCES} )
+-  add_dependencies(test_libcvmfs libcvmfs)
+-  target_link_libraries(test_libcvmfs
+-                        ${CMAKE_CURRENT_BINARY_DIR}/libcvmfs.a
+-                        ${SQLITE3_LIBRARY} ${CURL_LIBRARIES} ${CARES_LIBRARIES}
+-                        ${PACPARSER_LIBRARIES} ${ZLIB_LIBRARIES} ${OPENSSL_LIBRARIES}
+-                        ${RT_LIBRARY} ${UUID_LIBRARIES} pthread dl )
+ endif(BUILD_LIBCVMFS)
+ 
+ if (BUILD_OCTOPUS)
