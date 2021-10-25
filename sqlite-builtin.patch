@@ -1,0 +1,29 @@
+--- a/externals/sqlite3/src/sqlite3.c
++++ b/externals/sqlite3/src/sqlite3.c
+@@ -28932,7 +28932,7 @@
+ ** overflow, leave *pA unchanged and return 1.
+ */
+ SQLITE_PRIVATE int sqlite3AddInt64(i64 *pA, i64 iB){
+-#if GCC_VERSION>=5004000
++#if GCC_VERSION>=5004000 && !defined(__e2k__)
+   return __builtin_add_overflow(*pA, iB, pA);
+ #else
+   i64 iA = *pA;
+@@ -28952,7 +28952,7 @@
+ #endif
+ }
+ SQLITE_PRIVATE int sqlite3SubInt64(i64 *pA, i64 iB){
+-#if GCC_VERSION>=5004000
++#if GCC_VERSION>=5004000 && !defined(__e2k__)
+   return __builtin_sub_overflow(*pA, iB, pA);
+ #else
+   testcase( iB==SMALLEST_INT64+1 );
+@@ -28967,7 +28967,7 @@
+ #endif
+ }
+ SQLITE_PRIVATE int sqlite3MulInt64(i64 *pA, i64 iB){
+-#if GCC_VERSION>=5004000
++#if GCC_VERSION>=5004000 && !defined(__e2k__)
+   return __builtin_mul_overflow(*pA, iB, pA);
+ #else
+   i64 iA = *pA;
