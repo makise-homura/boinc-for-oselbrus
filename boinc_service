@@ -67,11 +67,16 @@ case "$1" in
     stop)
         boot_mesg "Stopping BOINC..."
         $BOINCCMDPREFIX /bin/bash -c "cd $DATA_DIR; $BOINCCMD_PATH --quit"
+        RV=$?
+        while pidof boinc 2>&1 1>/dev/null
+        do
+            sleep 1
+        done
+        test $RV -eq 0
         evaluate_retval
         ;;
     restart|force-reload)
         $0 stop
-        sleep 1
         $0 start
         ;;
     reload)
