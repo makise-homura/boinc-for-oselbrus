@@ -31,7 +31,8 @@ CGFSMOUNT_PATH=/root/cgroupfs-mount       # Path inside x86_64 image
 
 if [ "$ENABLE_CVMFS" = "yes" ]
 then
-    [ ! -d "$CVMFS_DIR" ] && mkdir -p $CVMFS_DIR
+    mkdir -p $CVMFS_DIR
+    [ ! -x $CLIENT_PATH -a -x $X86_64_FS_PATH/$CLIENT_PATH ] && mkdir -p $X86_64_FS_PATH/$CVMFS_DIR
     CVMFSPARM="-b $CVMFS_DIR -b /etc/fstab -b /etc/mtab"
 fi
 
