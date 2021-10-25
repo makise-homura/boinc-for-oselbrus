@@ -19,7 +19,7 @@ ENABLE_REMOTE_GUI_RPC=yes
 
 EXENAME=boinc  # This script should have a name other than EXENAME to avoid confusing statusproc.
 X86_64_FS_PATH=/opt/mcst/os_elbrus.6.0-rc3.x86_64
-RTC_PATH=/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob
+RTC_PATH=`ls /opt/mcst/rtc/bin/rtc_opt_rel_p?_x64_ob | head -n1`
 CLIENT_PATH=/usr/bin/$EXENAME
 DATA_DIR=/var/lib/boinc
 CVMFS_DIR=/cvmfs
