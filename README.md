@@ -506,14 +506,53 @@ boinccmd --quit
 * Gravitational Wave Search (Einstein@home) - работает, но даёт неправильные результаты.
 * Binary Radio Pulsar Search (Einstein@home) - работает.
 * SixTrack (LHC@home) - не получает задания.
+* camb_legacy (Cosmology@Home) - собирается, но не работает.
 
 Принципиально не могут работать:
 * Period Search (Asteroids@home) - cудя по всему, не поддерживается, судя по [этой теме](http://asteroidsathome.net/boinc/forum_thread.php?id=728#6157) на форуме. Есть исходники самого расчётного приложения, но нет исходников адаптированной для BOINC версии.
 * [planck_param_sims](https://github.com/marius311/lsplitsims) (Cosmology@Home) - требует docker, которого у нас пока нет ([bug 111934](http://bugzilla.lab.sun.mcst.ru/bugzilla-mcst/show_bug.cgi?id=111934)), а также, [судя по всему](https://www.cosmologyathome.org/faq.php#camb-legacy), и аппаратную виртуализацию.
 * [camb_boinc2docker](https://github.com/marius311/camb_boinc2docker) (Cosmology@Home) - требует docker, которого у нас пока нет ([bug 111934](http://bugzilla.lab.sun.mcst.ru/bugzilla-mcst/show_bug.cgi?id=111934)), а также, [судя по всему](https://www.cosmologyathome.org/faq.php#camb-legacy), и аппаратную виртуализацию.
-* camb_legacy (Cosmology@Home) - похоже, нет исходников. Есть что-то похожее [здесь](https://github.com/marius311/CAMB), но не собирается, говоря "ошибка: переменная цикла не найдена, цикл нельзя использовать в конструкции omp for".
 
 Проекты Universe@home и LHC@home не имеют приложений с открытыми исходниками (кроме SixTrack у последнего).
+
+### Сборка приложения camb_legacy из Cosomlogy@Home
+
+* Клонируем исходники: `git clone https://github.com/marius311/CAMB`;
+* Собираем: `cd CAMB; make -j16`;
+* Копируем бинарник `camb` в каталог `/var/lib/boinc/projects/www.cosmologyathome.org`;
+* Создаём файл `/var/lib/boinc/projects/www.cosmologyathome.org/app_info.xml` следующего содержания:
+```
+<app_info>
+  <app>
+    <name>camb</name>
+    <user_friendly_name>camb_legacy</user_friendly_name>
+  </app>
+  <file_info>
+    <name>camb</name>
+    <executable/>
+  </file_info>
+  <app_version>
+    <app_name>camb</app_name>
+    <version_num>217</version_num>
+    <api_version>6.3.5</api_version>
+    <file_ref>
+        <file_name>camb</file_name>
+        <main_program/>
+    </file_ref>
+  </app_version>
+</app_info>
+```
+* Перезапускаем BOINC и обновляем проект.
+
+На данный момент приложение [не работает нормально](http://www.cosmologyathome.org/forum_thread.php?id=7778&postid=22881#22881), зависая на нуле процентов, а также сыпет в лог BOINC такими сообщениями:
+```
+Task wu_102821_134515_0_0_0 exited with zero status but no 'finished' file
+If this happens repeatedly you may need to reset the project.
+```
+И в свой `stderr.txt` - такими:
+```
+STOP Must give num_massive number of integer physical neutrinos for each eigenstate
+```
 
 ### Работа с RakeSearch
 
@@ -581,7 +620,7 @@ make -j16 -f Makefile_e2k
 
 * Клонируем (поправленные для эльбруса) исходники: `git clone https://github.com/makise-homura/milkywayathome_client ; cd milkywayathome_client; git checkout elbrus-1.76` (на данный момент (октябрь 2021) workunit-ы посылаются для версии 1.76, а не 1.80 и выше, поэтому вместо ветки `elbrus`, являющейся модификацией ветки `master`, нужно забирать ветку `elbrus-1.76`);
 * Скачиваем зависимости: `git submodule init ; git submodule update --recursive`;
-* Собираем (без OpenCL - нам интересны вычисления на процессоре, а не видеокарте): `mkdir build ; cd build ; cmake -DSEPARATION_OPENCL=OFF -DNBODY_OPENCL=OFF .. ; make -j16`.
+* Собираем (без OpenCL - нам интересны вычисления на процессоре, а не видеокарте): `mkdir build ; cd build ; cmake -DSEPARATION_OPENCL=OFF -DNBODY_OPENCL=OFF .. ; make -j16`;
 * Копируем бинарники из `build/bin` в каталог `/var/lib/boinc/projects/milkyway.cs.rpi.edu_milkyway`;
 * Создаём файл `/var/lib/boinc/projects/milkyway.cs.rpi.edu_milkyway/app_info.xml` следующего содержания:
 ```
