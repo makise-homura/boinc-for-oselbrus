@@ -3,6 +3,8 @@ BOINC - популярная инфраструктура community-based нау
 
 В данном файле встречаются ссылки на внутренние ресурсы МЦСТ (например, на bugzilla и wiki) и имена хостов из внутренней сети МЦСТ; для пользователей, не имеющих туда доступа, эти ссылки работать не будут. Однако, общее понимание возможно и без учёта информации, расположенной по этим ссылкам.
 
+Во всех инструкциях по сборке параметр `-j16` приведён в примере сборки на двухпроцессорном Эльбрусе-8С. При другом количестве процессорных ядер в системе его нужно изменить (например, на `-j8` для восьмиядерной машины, `-j32` для 32-ядерной и т.п.)
+
 ## Способы работы BOINC
 
 Имеется возможность запуска BOINC на Эльбрусе как в **транслируемом** с помощью бинарного компилятора уровня приложений (rtc) режиме (что позволит выполнять задачи, собранные под архитектуру x86_64 - таково подавляющее большинство существующих задач), так и в **нативном** (но для этого необходимо будет вручную собрать каждую выполняемую задачу), если проект поддерживает выполнение в режиме [анонимной платформы](https://boinc.berkeley.edu/wiki/Anonymous_platform).
@@ -104,7 +106,7 @@ cd boinc
 git checkout client_release/7.18/7.18.1
 ./_autosetup
 ./configure -C --disable-server --prefix=/usr --with-wx-config=/usr/lib/wx/config/e2k-mcst-linux-gnu-gtk2-unicode-3.0
-make -j32
+make -j16
 make install
 ```
 Если сборка во много потоков под транслятором зависает, то помогает собирать в один поток.
@@ -141,7 +143,7 @@ unzip boinctui.zip
 cd boinctui-dbed88da21f2c74f4982467ac683d99019837265
 autoreconf -f -i
 ./configure --prefix=/usr --without-gnutls
-make -j32
+make -j16
 make install
 ```
 Вместо **boinctui** можно использовать его более развитую версию - **boinctui-extended** (например, последний на момент октября 2021 коммит `1725f33`):
@@ -151,7 +153,7 @@ cd boinctui-extended
 git checkout 1725f33
 autoconf
 ./configure --prefix=/usr --without-gnutls
-make -j32
+make -j16
 make install
 ```
 Запуск менеджеров производится очевидными командами `boinccmd`, `boincmgr`, `boinctui` и `boinctui-extended`.
@@ -352,7 +354,7 @@ grid.cern.ch            /cvmfs/grid.cern.ch             cvmfs   defaults        
 sft.cern.ch             /cvmfs/sft.cern.ch              cvmfs   defaults        0 0
 alice.cern.ch           /cvmfs/alice.cern.ch            cvmfs   defaults        0 0
 ```
-На Эльбрусе модуль fuse надо добавить в список загружаемых модулей (`` /etc/modules-`uname -r` ``) хостовой ОС.
+На Эльбрусе модуль `fuse` надо добавить в список загружаемых модулей (`` /etc/modules-`uname -r` ``) хостовой ОС.
 
 Чтобы CVMFS заработала без перезагрузки, надо выполнить следующие команды (под хостовой ОС):
 ```
@@ -368,7 +370,7 @@ modprobe fuse; mount -a
 
 #### Настройка cgroupfs
 
-Подсистема cgroupfs используется в контейнерах, запускаемых с помощью runc.
+Подсистема cgroupfs используется в контейнерах, запускаемых с помощью `runc`.
 
 Для монтирования и проверки работоспособности используются два скрипта: 
 * Монтирование: [cgroupfs-mount](https://raw.githubusercontent.com/tianon/cgroupfs-mount/master/cgroupfs-mount)
@@ -455,7 +457,7 @@ child process exit 2
 </stderr_txt>
 ]]>
 ```
-В дистрибутивах для x86_64 singularity уже есть. На машине **koakuma** этот дистрибутив, а также cvmfs развёрнут.
+В дистрибутивах для x86_64 singularity уже есть.
 
 Работоспособность singularity можно проверить такой командой (подразумевается, что cvmfs в системе имеется):
 ```
@@ -531,7 +533,7 @@ boinccmd --quit
 * Конфигурировать сборку BOINC с параметром `--with-boinc-alt-platform=e2k-linux-gnu` (это сделает `e2k-linux-gnu` основной платформой для BOINC-а);
 * Добавить в файл `/var/lib/boinc/cc_config.xml`, в блок `<options>` строчку `<alt_platform>e2k-linux-gnu</alt_platform>` (это позволит BOINC-у считать задания как для `e2k-mcst-linux-gnu`, так и для `e2k-linux-gnu`).
 
-2. Почему-то не проходит проверка чексуммы скачанного бинарника приложения. Для того, чтобы обойти это, необходимо после аттача к проекту и автоматического скачивания бинарника (и появления сообщения типа "Signature verification failed for rakesearch10_3.1_e2k-linux-gnu" в логе сообщений клиента BOINC) завершить работу клиента BOINC, после чего в файле `/var/lib/boinc/client_state.xml` найти блок `<file>`, содержащий строчку `<name>rakesearch10_3.1_e2k-linux-gnu</name>`, и в нём `<status>-120</status>` поменять на `<status>1</status>`, после чего заново запустить клиент BOINC.
+2. Почему-то не проходит проверка чексуммы скачанного бинарника приложения. Для того, чтобы обойти это, необходимо после аттача к проекту и автоматического скачивания бинарника (и появления сообщения типа `Signature verification failed for rakesearch10_3.1_e2k-linux-gnu` в логе сообщений клиента BOINC) завершить работу клиента BOINC, после чего в файле `/var/lib/boinc/client_state.xml` найти блок `<file>`, содержащий строчку `<name>rakesearch10_3.1_e2k-linux-gnu</name>`, и в нём `<status>-120</status>` поменять на `<status>1</status>`, после чего заново запустить клиент BOINC.
 
 Далее описан процесс сборки текущих исходников (commit `04b4adb`) из репозитория RakeSearch; изменения, относящиеся к приложению для "Эльбруса", туда пока не внесены.
 
@@ -545,11 +547,9 @@ cp Makefile_x86-64 Makefile_e2k
 ```
 * Устанавливаем переменную `BOINC_DIR` в файле `Makefile_e2k` так, чтобы она указывала на тот каталог, где собирался нативный BOINC (то есть тот, в котором лежит каталог `api`);
 
-* Из файла `main.cpp` убираем UTF-8 BOM;
-
 * Собираем:
 ```
-make -j4 -f Makefile_e2k
+make -j16 -f Makefile_e2k
 ```
 * Копируем в каталог `/var/lib/boinc/projects/rake.boincfast.ru_rakesearch` (создав его при необходимости) получившийся файл `rakesearch` (подразумевается, что клиент BOINC настроен и работает, а также подключен к проекту RakeSearch, либо с помощью удалённого менеджера аккаунтов типа [BOINCstats BAM!](https://boincstats.com/en/bam/), либо вручную);
 
@@ -656,7 +656,7 @@ int main(int argc, char *argv[])
 
 На старых версиях компилятора сборка до конца не проходит из-за [bug 114943](http://bugzilla.lab.sun.mcst.ru/bugzilla-mcst/show_bug.cgi?id=114943) и [bug 114938](http://bugzilla.lab.sun.mcst.ru/bugzilla-mcst/show_bug.cgi?id=114938). Необходмимо пользоваться компилятором версии 1.25 или более новой.
 
-Клонируем куда-нибудь SixTrack и собираем (сначала собрав API BOINC):
+Клонируем куда-нибудь SixTrack и собираем (включая подтягивание и сборку API BOINC):
 ```
 git clone https://github.com/SixTrack/SixTrack.git
 cd SixTrack
@@ -714,10 +714,10 @@ tar xf fftw-3.3.8.tar.gz
 cd fftw-3.3.8
 patch -lp1 < ../fftw-avx-sse.patch
 ./configure --prefix=/usr --enable-openmp --enable-threads --enable-avx --enable-avx2 --enable-sse2 --enable-shared --enable-static
-make -j20
+make -j16
 make install
 ./configure --prefix=/usr --enable-openmp --enable-threads --enable-avx --enable-avx2 --enable-sse --enable-sse2 --enable-shared --enable-static --enable-float
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -728,7 +728,7 @@ tar xf gsl-1.15.tar.gz
 cd gsl-1.15
 cp /usr/share/automake-1.14/config.{guess,sub} .
 ./configure --prefix=/usr
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -762,7 +762,7 @@ cd hdf5-1.10.5
 cp /usr/share/automake-1.14/config.{guess,sub} bin
 sed -i 's/-Wsync-nand//' config/gnu-{flags,cxxflags} # см. bug 114161
 ./configure --prefix=/usr --enable-build-mode=production --enable-cxx
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -772,7 +772,7 @@ wget http://software.ligo.org/lscsoft/source/lalsuite/lal-6.20.1.tar.xz
 tar xf lal-6.20.1.tar.xz
 cd lal-6.20.1
 ./configure --prefix=/usr --enable-boinc --disable-gcc-flags
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -787,7 +787,7 @@ tar xf ldas-tools-al-2.6.2.tar.gz
 cd ldas-tools-al-2.6.2
 sed -i 's/#if __GNUC__ > 4 || ( __GNUC__ == 4 ) && ( __GNUC_MINOR__ >= 5 )/#if (__GNUC__ > 4 \|\| ( __GNUC__ == 4 ) \&\& ( __GNUC_MINOR__ >= 5 )) \&\& !defined(__e2k__)/' src/Deprecated.hh
 ./configure --prefix=/usr --disable-warnings-as-errors
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -797,7 +797,7 @@ wget http://software.ligo.org/lscsoft/source/ldas-tools-framecpp-2.6.5.tar.gz
 tar xf ldas-tools-framecpp-2.6.5.tar.gz
 cd ldas-tools-framecpp-2.6.5
 ./configure --prefix=/usr --disable-warnings-as-errors
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -807,7 +807,7 @@ wget http://software.ligo.org/lscsoft/source/lalsuite/lalsimulation-1.9.0.tar.xz
 tar xf lalsimulation-1.9.0.tar.xz
 cd lalsimulation-1.9.0
 ./configure --prefix=/usr --enable-openmp --disable-gcc-flags
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -818,7 +818,7 @@ cd ligo-metaio
 cp /usr/share/automake-1.14/config.{guess,sub} gnuscripts
 sed -i 's/AM_CONFIG_HEADER/AC_CONFIG_HEADERS/' configure.ac
 ./configure --prefix=/usr
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -830,7 +830,7 @@ wget http://software.ligo.org/lscsoft/source/lalsuite/lalmetaio-1.5.0.tar.xz
 tar xf lalmetaio-1.5.0.tar.xz
 cd lalmetaio-1.5.0
 ./configure --prefix=/usr
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -840,7 +840,7 @@ wget http://software.ligo.org/lscsoft/source/lalsuite/lalburst-1.5.1.tar.xz
 tar xf lalburst-1.5.1.tar.xz
 cd lalburst-1.5.1
 ./configure --prefix=/usr --disable-gcc-flags
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -850,7 +850,7 @@ git clone https://github.com/VolunteerComputingHelp/ligo-libframe
 cd ligo-libframe
 autoreconf -fi
 ./configure --prefix=/usr
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -860,7 +860,7 @@ wget http://software.ligo.org/lscsoft/source/lalsuite/lalframe-1.4.4.tar.xz
 tar xf lalframe-1.4.4.tar.xz
 cd lalframe-1.4.4
 ./configure --prefix=/usr
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -871,7 +871,7 @@ tar xf chealpix-3.30.0.tar.gz
 cd chealpix-3.30.0
 cp /usr/share/automake-1.14/config.{guess,sub} .
 CFITSIO_LIBS="-lcurl -lcfitsio" ./configure --prefix=/usr
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -881,7 +881,7 @@ wget http://software.ligo.org/lscsoft/source/lalsuite/lalinspiral-1.9.0.tar.xz
 tar xf lalinspiral-1.9.0.tar.xz
 cd lalinspiral-1.9.0
 ./configure --prefix=/usr --enable-all-lal --enable-lalframe --disable-gcc-flags
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -891,7 +891,7 @@ wget https://curl.haxx.se/download/curl-7.58.0.tar.gz
 tar xf curl-7.58.0.tar.gz
 cd curl-7.58.0
 ./configure --enable-static --disable-ldap --without-gssapi --prefix=/usr
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -900,7 +900,7 @@ cd ..
 git clone https://github.com/healpy/cfitsio
 cd cfitsio
 ./configure --enable-sse2 --enable-ssse3 --prefix=/usr
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -912,7 +912,7 @@ cd lalpulsar-1.18.0
 sed -i 's/LALSUITE_CHECK_SIMD/AM_CONDITIONAL([HAVE_SSE_COMPILER],[false])/' configure.ac
 autoreconf -fi
 CFITSIO_LIBS="-lcurl -lcfitsio" ./configure --prefix=/usr --enable-boinc --disable-gcc-flags --enable-openmp --enable-cfitsio
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -922,7 +922,7 @@ wget http://software.ligo.org/lscsoft/source/lalsuite/lalinference-1.11.0.tar.xz
 tar xf lalinference-1.11.0.tar.xz
 cd lalinference-1.11.0
 ./configure --prefix=/usr --enable-openmp --enable-all-lal --disable-gcc-flags
-make -j20
+make -j16
 make install
 cd ..
 ```
@@ -933,7 +933,7 @@ tar xf lalapps-6.24.0.tar.xz
 cd lalapps-6.24.0
 CFITSIO_LIBS="-lcfitsio -lcurl -licuuc -licudata -ldl -lstdc++" ./configure --prefix=/usr --enable-boinc --disable-gcc-flags
 cd src/lalapps
-make -j20
+make -j16
 cd ../../src/pulsar/GCT
 wget https://git.ligo.org/lscsoft/lalsuite-archive/raw/master/lalapps/src/pulsar/EinsteinAtHome/hs_boinc_extras.h
 sed -i '1i#include <stdbool.h>' hs_boinc_extras.c
@@ -941,7 +941,7 @@ wget https://git.ligo.org/lscsoft/lalsuite-archive/raw/master/lalapps/src/pulsar
 wget https://raw.githubusercontent.com/lscsoft/lalsuite-archive/master/lalapps/src/pulsar/GCT/gc_hotloop_sse2.h
 sed -i 's/-DEAH_BOINC/-DEAH_BOINC -DGC_SSE2_OPT -DEXP_NO_ASM /' Makefile
 sed -i 's/-O2/-O3/' Makefile
-make -j20 eah_HierarchSearchGCT
+make -j16 eah_HierarchSearchGCT
 ```
 После этого получившийся файл `eah_HierarchSearchGCT` следует скопировать в `/var/lib/boinc/projects/einstein.phys.uwm.edu` и там же создать файл `app_info.xml` следующего содержания (либо добавить в него всё, что находится внутри тега `app_info`):
 ```
@@ -968,7 +968,7 @@ make -j20 eah_HierarchSearchGCT
 ```
 После этого нужно перезапустить BOINC.
 
-Как видно, собранный файл подходит для задачи "Gravitational Wave search O2 Multi-Directional" (einstein_O2MD1) - единственной, которая считается на процессоре, а не GPU.
+Как видно, собранный файл подходит для задачи "Gravitational Wave search O2 Multi-Directional" (`einstein_O2MD1`) - единственной, которая считается на процессоре, а не GPU.
 
 Стоит отметить, что на современных процессорах "Эльбрус-8С" работа данного приложения без поддержки SSE в LALapps длится порядка 16 суток, что больше дедлайна; **таким образом, ни один work unit не может быть отправлен в срок**. На "Эльбрус-8С2" подсчёт завершается за 13 суток, что чуть меньше дедлайна, но всё равно, при ненулевом даунтайме машины дедлайн может быть превышен. Поэтому было необходимо переписать поддержку SSE с ассемблера на builtin-ы. Это повысило производительность по результатам замеров примерно в 3 раза, что, хоть и в 7,67 раз медленнее x86_64 (2,67 раза с поправкой на тактовую частоту), но позволяет посчитать задание примерно за 5 суток, что укладывается в дедлайн 14 дней.
 
@@ -1002,7 +1002,7 @@ sed -ie 's!#include "sysdep.h"!#include <boinc/config.h>\n#include <stdlib.h>\n#
 Если нет файлов для профилирования, то не получится собрать бинарник с профилем. В таком случае отключаем генерацию профиля и собираем:
 ```
 sed -i 's/-fprofile-use//' Makefile
-LDFLAGS=-ldl make -j20 EINSTEIN_RADIO_INSTALL=/usr release
+LDFLAGS=-ldl make -j16 EINSTEIN_RADIO_INSTALL=/usr release
 ```
 Однако, благодаря [этой теме](https://einsteinathome.org/ru/content/no-test-file-brp-src-releasezip), можно понять, как взять файлы генерации профиля.
 
