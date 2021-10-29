@@ -39,8 +39,9 @@ fi
 CLIENTCMDPREFIX=
 BOINCCMDPREFIX=
 CGFSMOUNTPREFIX=
-[ ! -x $CLIENT_PATH    -a -x $X86_64_FS_PATH/$CLIENT_PATH ]    && CLIENTCMDPREFIX="$RTC_PATH --path_prefix $X86_64_FS_PATH $CVMFSPARM --"
-[ ! -x $BOINCCMD_PATH  -a -x $X86_64_FS_PATH/$BOINCCMD_PATH ]  &&  BOINCCMDPREFIX="$RTC_PATH --path_prefix $X86_64_FS_PATH $CVMFSPARM --"
+RELDATAPATH=$DATA_DIR
+[ ! -x $CLIENT_PATH    -a -x $X86_64_FS_PATH/$CLIENT_PATH ]    && CLIENTCMDPREFIX="$RTC_PATH --path_prefix $X86_64_FS_PATH $CVMFSPARM --" && RELDATAPATH=$X86_64_FS_PATH/$DATA_DIR
+[ ! -x $BOINCCMD_PATH  -a -x $X86_64_FS_PATH/$BOINCCMD_PATH ]  &&  BOINCCMDPREFIX="$RTC_PATH --path_prefix $X86_64_FS_PATH $CVMFSPARM --" && RELDATAPATH=$DATA_DIR
 [ ! -x $CGFSMOUNT_PATH -a -x $X86_64_FS_PATH/$CGFSMOUNT_PATH ] && CGFSMOUNTPREFIX="$RTC_PATH --path_prefix $X86_64_FS_PATH $CVMFSPARM --"
 
 ALLOWREMOTE=
@@ -67,7 +68,7 @@ case "$1" in
         ;;
     stop)
         boot_mesg "Stopping BOINC..."
-        $BOINCCMDPREFIX /bin/bash -c "cd $DATA_DIR; $BOINCCMD_PATH --quit"
+        $BOINCCMDPREFIX /bin/bash -c "cd $RELDATAPATH; $BOINCCMD_PATH --quit"
         RV=$?
         while pidof boinc 2>&1 1>/dev/null
         do
@@ -82,7 +83,7 @@ case "$1" in
         ;;
     reload)
         echo -n "Reloading BOINC CC configuration: "
-        $BOINCCMDPREFIX /bin/bash -c "cd $DATA_DIR; $BOINCCMD_PATH --read_cc_config"
+        $BOINCCMDPREFIX /bin/bash -c "cd $RELDATAPATH; $BOINCCMD_PATH --read_cc_config"
         evaluate_retval
         ;;
     *)
