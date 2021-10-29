@@ -47,6 +47,10 @@ BOINC - популярная инфраструктура community-based нау
 
 Работает.
 
+* **[Rosetta](https://boinc.bakerlab.org/rosetta/)**
+
+Работает только на однопроцессорных машинах (см. [bug 132607](http://bugzilla.lab.sun.mcst.ru/bugzilla-mcst/show_bug.cgi?id=132607)).
+
 Принимаются предложения по добавлению других проектов.
 
 ## Установка BOINC
