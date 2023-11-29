@@ -81,7 +81,7 @@ dpkg -i /net/satori/i-data/9a03a6a1/nfs/shared/rtc_packages/os-elbrus-image-x86-
 ```
 dpkg -i /net/satori/i-data/9a03a6a1/nfs/shared/rtc_packages/os-elbrus-image-x86-64-6.0-rc3_6.0.3-u1_all.deb
 ```
-* Потом файл `/etc/resolv.conf` нужно скопировать в каталог `/opt/mcst/os_elbrus.6.0-rc3.x86_64`, чтобы транслируемой ОС был доступен DNS.
+* Потом файл `/etc/resolv.conf` нужно либо скопировать в каталог `/opt/mcst/os_elbrus.6.0-rc3.x86_64`, либо пробрасывать при запуске RTC с помощью параметра `-b`, чтобы транслируемой ОС был доступен DNS.
 
 ### Установка в транслируемом режиме
 
@@ -256,7 +256,7 @@ wget https://raw.githubusercontent.com/makise-homura/boinc-for-oselbrus/master/b
 
 Если скрипт `boinc_service` не используется, то в общем случае boinc запускается командой:
 ```
-/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob --path_prefix /opt/mcst/os_elbrus.6.0-rc3.x86_64 /usr/bin/boinc --daemon --dir /var/lib/boinc
+/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob -b /etc/passwd -b /etc/shadow -b /etc/group -b /etc/resolv.conf -b /root/.bashrc --path_prefix /opt/mcst/os_elbrus.6.0-rc3.x86_64 /usr/bin/boinc --daemon --dir /var/lib/boinc
 ```
 Рекомендуется использовать бинарный транслятор rtc версии не ниже 4.0 и образ файловой системы ОС Эльбрус не ниже 6.0-rc3 (в противном случае некоторые задачи могут не работать или завершаться с ошибкой; на старых версиях rtc и ОС такое было с задачами Einstein@home и Universe@home).
 
@@ -374,7 +374,7 @@ modprobe fuse; mount -a
 ```
 При этом BOINC надо запускать, прокидывая средствами бинарного транслятора (ключ `-b`) каталог `/cvmfs`, а также (см. [bug 117861](http://bugzilla.lab.sun.mcst.ru/bugzilla-mcst/show_bug.cgi?id=117861)) файлы `/etc/fstab` и `/etc/mtab` в гостевую ОС:
 ```
-/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob --path_prefix /opt/mcst/os_elbrus.4.0-rc4.x86_64 -b /cvmfs -b /etc/fstab -b /etc/mtab -- /usr/bin/boinc --daemon --dir /var/lib/boinc
+/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob -b /etc/passwd -b /etc/shadow -b /etc/group -b /etc/resolv.conf -b /root/.bashrc --path_prefix /opt/mcst/os_elbrus.4.0-rc4.x86_64 -b /cvmfs -b /etc/fstab -b /etc/mtab -- /usr/bin/boinc --daemon --dir /var/lib/boinc
 ```
 Скрипт `boinc_service`, приведённый выше, так и делает.
 
