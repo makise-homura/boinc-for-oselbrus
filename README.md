@@ -71,17 +71,17 @@ libboinc7:amd64   7.16.6+dfsg-1   amd64
 
 Можно использовать любой образ файловой системы для архитектуры x86_64, но для чистоты эксперимента используется образ ОС Эльбрус.
 
-Для простоты установки сделан пакет с образом файловой системы, который можно сразу установить в систему (сам пакет весит 8,5 ГБ, на диске занимает около 40 ГБ в `/opt/mcst/`, время распаковки - примерно 40 минут) командой:
+Для простоты установки сделан пакет с образом файловой системы, который можно сразу установить в систему (сам пакет весит 19 ГБ, на диске занимает около 56 ГБ в `/opt/mcst/`, время распаковки - примерно 60 минут) командой:
 ```
-dpkg -i /net/satori/i-data/9a03a6a1/nfs/shared/rtc_packages/os-elbrus-image-x86-64-6.0-rc3_6.0.3-u1_all.deb
+dpkg -i /net/patchouli/export/data/NAS_Public/rtc_packages/os-elbrus-image-x86-64-7.2_7.2-u1_all.deb
 ```
 Сетевой ресурс `/net/satori` доступен из внутренней сети МЦСТ при включённой AutoFS.
 
-* Ставим образ файловой системы ОС Эльбрус 6.0:
+* Ставим образ файловой системы ОС Эльбрус 7.2:
 ```
-dpkg -i /net/satori/i-data/9a03a6a1/nfs/shared/rtc_packages/os-elbrus-image-x86-64-6.0-rc3_6.0.3-u1_all.deb
+dpkg -i /net/patchouli/export/data/NAS_Public/rtc_packages/os-elbrus-image-x86-64-7.2_7.2-u1_all.deb
 ```
-* Потом файл `/etc/resolv.conf` нужно либо скопировать в каталог `/opt/mcst/os_elbrus.6.0-rc3.x86_64`, либо пробрасывать при запуске RTC с помощью параметра `-b`, чтобы транслируемой ОС был доступен DNS.
+* Потом файл `/etc/resolv.conf` нужно либо скопировать в каталог `/opt/mcst/os_elbrus.7.2.x86_64`, либо пробрасывать при запуске RTC с помощью параметра `-b`, чтобы транслируемой ОС был доступен DNS (init-скрипт, описанный ниже, умеет это делать).
 
 ### Установка в транслируемом режиме
 
@@ -93,11 +93,11 @@ dpkg -i /net/satori/i-data/9a03a6a1/nfs/shared/rtc_packages/os-elbrus-image-x86-
 
 Разумеется, это всё нужно делать из-под бинарного транслятора, запустив его командой типа такой:
 ```
-/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob --path_prefix /opt/mcst/os_elbrus.6.0-rc3.x86_64 -- /bin/bash
+/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob --path_prefix /opt/mcst/os_elbrus.7.2.x86_64 -- /bin/bash
 ```
 ### Сборка BOINC
 
-Для сборки необходима версия ОС Эльбрус 6.0-rc3 или более поздняя.
+Для сборки необходима версия ОС Эльбрус 6.0-rc3 или более поздняя (рекомендуется 7.2).
 
 Особенности сборки:
 * Можно при сборке BOINC указать параметр конфигурации `--disable-server`, если мы не хотим собирать сервер (а обычно мы не хотим);
@@ -106,7 +106,7 @@ dpkg -i /net/satori/i-data/9a03a6a1/nfs/shared/rtc_packages/os-elbrus-image-x86-
 Собственно, сборка (для версии 7.18.1):
 ```
 git clone https://github.com/BOINC/boinc 
-cd boinc 
+cd boinc
 git checkout client_release/7.18/7.18.1
 ./_autosetup
 ./configure -C --disable-server --prefix=/usr --with-wx-config=/usr/lib/wx/config/e2k-mcst-linux-gnu-gtk2-unicode-3.0
@@ -256,13 +256,13 @@ wget https://raw.githubusercontent.com/makise-homura/boinc-for-oselbrus/master/b
 
 Если скрипт `boinc_service` не используется, то в общем случае boinc запускается командой:
 ```
-/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob -b /etc/passwd -b /etc/shadow -b /etc/group -b /etc/resolv.conf -b /root/.bashrc --path_prefix /opt/mcst/os_elbrus.6.0-rc3.x86_64 /usr/bin/boinc --daemon --dir /var/lib/boinc
+/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob -b /etc/passwd -b /etc/shadow -b /etc/group -b /etc/resolv.conf -b /root/.bashrc --path_prefix /opt/mcst/os_elbrus.7.2.x86_64 /usr/bin/boinc --daemon --dir /var/lib/boinc
 ```
 Рекомендуется использовать бинарный транслятор rtc версии не ниже 4.0 и образ файловой системы ОС Эльбрус не ниже 6.0-rc3 (в противном случае некоторые задачи могут не работать или завершаться с ошибкой; на старых версиях rtc и ОС такое было с задачами Einstein@home и Universe@home).
 
 Здесь и далее все пути даны по умолчанию:
 * `/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob` - путь к бинарному транслятору (для случая хоста на основе Эльбрус-8С);
-* `/opt/mcst/os_elbrus.6.0-rc3.x86_64` - путь к образу гостевой системы;
+* `/opt/mcst/os_elbrus.7.2.x86_64` - путь к образу гостевой системы;
 * `/usr/bin/boinc` - путь к бинарнику BOINC внутри образа гостевой системы;
 * `/var/lib/boinc` - путь к рабочему каталогу BOINC внутри образа гостевой системы.
 
@@ -374,7 +374,7 @@ modprobe fuse; mount -a
 ```
 При этом BOINC надо запускать, прокидывая средствами бинарного транслятора (ключ `-b`) каталог `/cvmfs`, а также (см. [bug 117861](http://bugzilla.lab.sun.mcst.ru/bugzilla-mcst/show_bug.cgi?id=117861)) файлы `/etc/fstab` и `/etc/mtab` в гостевую ОС:
 ```
-/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob -b /etc/passwd -b /etc/shadow -b /etc/group -b /etc/resolv.conf -b /root/.bashrc --path_prefix /opt/mcst/os_elbrus.4.0-rc4.x86_64 -b /cvmfs -b /etc/fstab -b /etc/mtab -- /usr/bin/boinc --daemon --dir /var/lib/boinc
+/opt/mcst/rtc/bin/rtc_opt_rel_p1_x64_ob -b /etc/passwd -b /etc/shadow -b /etc/group -b /etc/resolv.conf -b /root/.bashrc --path_prefix /opt/mcst/os_elbrus.7.2.x86_64 -b /cvmfs -b /etc/fstab -b /etc/mtab -- /usr/bin/boinc --daemon --dir /var/lib/boinc
 ```
 Скрипт `boinc_service`, приведённый выше, так и делает.
 
