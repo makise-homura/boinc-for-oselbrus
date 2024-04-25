@@ -58,6 +58,7 @@ case "$1" in
         ;;
     start)
         boot_mesg "Starting BOINC..."
+        [ "$ENABLE_CVMFS" = "yes" ] && mount -a
         if [ "$ENABLE_CGROUPFS" = "yes" -a ! -x $CGFSMOUNT_PATH -a ! -x $X86_64_FS_PATH/$CGFSMOUNT_PATH ]
         then
             echo "  (Warning: cgroupfs mount enabled, but no $CGFSMOUNT_PATH found)"
